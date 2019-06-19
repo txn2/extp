@@ -126,7 +126,8 @@ func (gc *GrafanaClient) EnablePluginHandler(c *gin.Context) {
 		return
 	}
 
-	ak.SetPayload(resp)
+	ak.SetPayloadType("PluginReturn")
+	ak.GinSend(string(*resp))
 }
 
 // CreateOrgHandler creates a Grafana organization and default user.
