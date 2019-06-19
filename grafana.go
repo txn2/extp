@@ -261,7 +261,7 @@ func (gc *GrafanaClient) Cmd(verb string, path string, orgId int, payloadJs []by
 		zap.ByteString("json", payloadJs),
 	)
 
-	req, err := http.NewRequest(verb, "http://localhost:3000"+path, bytes.NewBuffer(payloadJs))
+	req, err := http.NewRequest(verb, gc.Location+path, bytes.NewBuffer(payloadJs))
 	if err != nil {
 		return 0, nil, err
 	}
