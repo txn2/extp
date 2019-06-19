@@ -294,20 +294,21 @@ func (gc *GrafanaClient) Cmd(verb string, path string, orgId int, payloadJs []by
 	return resp.StatusCode, &body, nil
 }
 
+// getSimplePassword
 func getSimplePassword() string {
 	rand.Seed(time.Now().UnixNano())
-	digits := "23456789"
+	digits := "0123456789"
+	specials := "-_+="
 	all := "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
 		"abcdefghijklmnopqrstuvwxyz" +
-		digits
+		digits + specials
 	length := 8
 	buf := make([]byte, length)
 	buf[0] = digits[rand.Intn(len(digits))]
-
+	buf[1] = specials[rand.Intn(len(specials))]
 	for i := 2; i < length; i++ {
 		buf[i] = all[rand.Intn(len(all))]
 	}
-
 	for i := len(buf) - 1; i > 0; i-- {
 		j := rand.Intn(i + 1)
 		buf[i], buf[j] = buf[j], buf[i]
