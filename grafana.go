@@ -273,7 +273,7 @@ func (gc *GrafanaClient) Cmd(verb string, path string, orgId int, payloadJs []by
 		req.Header.Set("X-Grafana-Org-Id", strconv.Itoa(orgId))
 	}
 
-	req.SetBasicAuth("admin", "admin")
+	req.SetBasicAuth(gc.Username, gc.Password)
 
 	resp, err := gc.Api.HttpClient.Http.Do(req)
 	if err != nil {
