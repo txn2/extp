@@ -12,9 +12,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/txn2/ack"
-
 	"github.com/patrickmn/go-cache"
+	"github.com/txn2/ack"
 	"github.com/txn2/extp"
 	"github.com/txn2/micro"
 	"github.com/txn2/provision"
@@ -22,8 +21,6 @@ import (
 )
 
 var (
-	systemPrefixEnv = getEnv("SYSTEM_PREFIX", "system_")
-
 	graLocationEnv      = getEnv("GF_LOCATION", "http://localhost")
 	graAdminUserEnv     = getEnv("GF_SECURITY_ADMIN_USER", "admin")
 	graAdminPasswordEnv = getEnv("GF_SECURITY_ADMIN_PASSWORD", "admin")
