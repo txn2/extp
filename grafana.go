@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/txn2/ack"
@@ -165,7 +167,7 @@ func (gc *GrafanaClient) CreateOrgHandler(c *gin.Context) {
 	user := GraUser{
 		Name:     orgName,
 		Login:    orgName,
-		Password: "12345",
+		Password: getSimplePassword(),
 	}
 
 	// Create a global user
@@ -290,4 +292,26 @@ func (gc *GrafanaClient) Cmd(verb string, path string, orgId int, payloadJs []by
 	}
 
 	return resp.StatusCode, &body, nil
+}
+
+func getSimplePassword() string {
+	rand.Seed(time.Now().UnixNano())
+	digits := "23456789"
+	all := "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+		"abcdefghijklmnopqrstuvwxyz" +
+		digits
+	length := 8
+	buf := make([]byte, length)
+	buf[0] = digits[rand.Intn(len(digits))]
+
+	for i := 2; i < length; i++ {
+		buf[i] = all[rand.Intn(len(all))]
+	}
+
+	for i := len(buf) - 1; i > 0; i-- {
+		j := rand.Intn(i + 1)
+		buf[i], buf[j] = buf[j], buf[i]
+	}
+
+	return string(buf)
 }
