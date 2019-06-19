@@ -103,7 +103,7 @@ dockers:
   goarch: amd64
   goarm: ''
   binaries:
-    - provision
+    - extp
   dockerfile: Dockerfile
   image_templates:
     - "txn2/extp:latest"
@@ -118,7 +118,7 @@ dockers:
   goarch: arm
   goarm: 6
   binaries:
-    - provision
+    - extp
   dockerfile: Dockerfile
   image_templates:
     - "txn2/extp:armv6-latest"
