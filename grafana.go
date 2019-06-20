@@ -82,6 +82,55 @@ func NewGrafanaClient(cfg *GrafanaClientCfg) *GrafanaClient {
 	return &GrafanaClient{GrafanaClientCfg: cfg}
 }
 
+// CreateDatasourceHandler
+func (gc *GrafanaClient) CreateDatasourceHandler(c *gin.Context) {
+	ak := ack.Gin(c)
+	orgName := c.Param("orgName")
+
+	// get the orgId from the org name
+	code, resp, err := gc.Cmd("GET", "/api/orgs/name/"+orgName, 0, nil)
+	if err != nil {
+		ak.GinErrorAbort(500, "GrafanaClientError", err.Error())
+		return
+	}
+
+	if code != 200 {
+		ak.GinErrorAbort(code, "GetOrgNon200", string(*resp))
+		return
+	}
+
+	gcOrg := &GraOrg{}
+
+	err = json.Unmarshal(*resp, gcOrg)
+	if err != nil {
+		ak.SetPayload(string(*resp))
+		ak.GinErrorAbort(code, "UnmarshalError", err.Error())
+	}
+
+	rd, err := c.GetRawData()
+	if err != nil {
+		ak.SetPayloadType("ErrorMessage")
+		ak.SetPayload("There was a problem with the posted data")
+		ak.GinErrorAbort(500, "PostDataError", err.Error())
+		return
+	}
+
+	// Create Datasource
+	code, resp, err = gc.Cmd("POST", "/api/datasources", gcOrg.Id, rd)
+	if err != nil {
+		ak.GinErrorAbort(500, "GrafanaClientError", err.Error())
+		return
+	}
+
+	if code != 200 {
+		ak.GinErrorAbort(code, "CreateDatasourcNon200", string(*resp))
+		return
+	}
+
+	ak.SetPayloadType("CreateDatasourcReturn")
+	ak.GinSend(string(*resp))
+}
+
 // EnablePluginHandler
 func (gc *GrafanaClient) EnablePluginHandler(c *gin.Context) {
 	ak := ack.Gin(c)

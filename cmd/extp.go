@@ -198,6 +198,12 @@ func main() {
 		graClient.EnablePluginHandler,
 	)
 
+	server.Router.POST(
+		"/grafana/createDatasource/:orgName",
+		accessHandler,
+		graClient.CreateDatasourceHandler,
+	)
+
 	// run provisioning server
 	server.Run()
 }
