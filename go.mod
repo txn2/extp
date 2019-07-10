@@ -3,6 +3,7 @@ module github.com/txn2/extp
 go 1.12
 
 require (
+	github.com/davecgh/go-spew v1.1.1
 	github.com/gin-gonic/gin v1.3.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/txn2/ack v1.8.3

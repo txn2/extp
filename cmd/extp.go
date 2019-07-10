@@ -188,20 +188,30 @@ func main() {
 
 	server.Router.GET(
 		"/grafana/createOrg/:orgName",
+		// verifies access to orgName
 		accessHandler,
 		graClient.CreateOrgHandler,
 	)
 
 	server.Router.POST(
 		"/grafana/enablePlugin/:orgName/:plugin",
+		// verifies access to orgName
 		accessHandler,
 		graClient.EnablePluginHandler,
 	)
 
 	server.Router.POST(
 		"/grafana/createDatasource/:orgName",
+		// verifies access to orgName
 		accessHandler,
 		graClient.CreateDatasourceHandler,
+	)
+
+	server.Router.GET(
+		"/grafana/setHomeDashboard/:orgName/:uid",
+		// verifies access to orgName
+		accessHandler,
+		graClient.HomeDashboardHandler,
 	)
 
 	// run provisioning server

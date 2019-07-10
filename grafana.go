@@ -52,6 +52,37 @@ type GraOrg struct {
 	Address GraOrgAddress `json:"address,omitempty"`
 }
 
+// GraOrgPrefs
+type GraOrgPrefs struct {
+	Theme           string `json:"theme"`
+	HomeDashboardId int    `json:"homeDashboardId"`
+	Timezone        string `json:"timezone"`
+}
+
+// GraDashboard
+type GraDashboardDetails struct {
+	Id            int      `json:"id"`
+	Uid           string   `json:"uid"`
+	Title         string   `json:"title"`
+	Tags          []string `json:"tags"`
+	Timezone      string   `json:"timezone"`
+	SchemaVersion int      `json:"schemaVersion"`
+	Version       int      `json:"version"`
+}
+
+// GraDashboardMeta
+type GraDashboardMeta struct {
+	IsStarred bool   `json:"isStarred"`
+	Url       string `json:"url"`
+	Slug      string `json:"slug"`
+}
+
+// GraDashboardResult
+type GraDashboard struct {
+	Dashboard GraDashboardDetails `json:"dashboard"`
+	Meta      GraDashboardMeta    `json:"meta"`
+}
+
 // GraCreateUserResponse
 type GraCreateUserResponse struct {
 	Id      int    `json:"id"`
@@ -62,6 +93,11 @@ type GraCreateUserResponse struct {
 type GraCreateOrgResponse struct {
 	Message string `json:"message"`
 	OrgId   int    `json:"orgId"`
+}
+
+// GraGenericResponse
+type GraGenericResponse struct {
+	Message string `json:"message"`
 }
 
 // CrafanaClientCfg
@@ -129,6 +165,81 @@ func (gc *GrafanaClient) CreateDatasourceHandler(c *gin.Context) {
 
 	ak.SetPayloadType("CreateDatasourcReturn")
 	ak.GinSend(string(*resp))
+}
+
+// HomeDashboardHandler
+func (gc *GrafanaClient) HomeDashboardHandler(c *gin.Context) {
+	ak := ack.Gin(c)
+	orgName := c.Param("orgName")
+	uid := c.Param("uid")
+
+	// get dashboard Id from the uid
+	code, dashResp, err := gc.Cmd("GET", "/api/dashboards/uid/"+uid, 0, nil)
+	if err != nil {
+		ak.GinErrorAbort(500, "GrafanaClientError", err.Error())
+		return
+	}
+
+	if code != 200 {
+		ak.GinErrorAbort(code, "GetOrgNon200", string(*dashResp))
+		return
+	}
+
+	gdm := &GraDashboard{}
+	err = json.Unmarshal(*dashResp, gdm)
+	if err != nil {
+		ak.SetPayload(string(*dashResp))
+		ak.GinErrorAbort(code, "UnmarshalError", err.Error())
+		return
+	}
+
+	// get the org id from the name
+	// get the orgId from the org name
+	code, resp, err := gc.Cmd("GET", "/api/orgs/name/"+orgName, 0, nil)
+	if err != nil {
+		ak.GinErrorAbort(500, "GrafanaClientError", err.Error())
+		return
+	}
+
+	if code != 200 {
+		ak.GinErrorAbort(code, "GetOrgNon200", string(*resp))
+		return
+	}
+
+	gcOrg := &GraOrg{}
+
+	err = json.Unmarshal(*resp, gcOrg)
+	if err != nil {
+		ak.SetPayload(string(*resp))
+		ak.GinErrorAbort(code, "UnmarshalError", err.Error())
+	}
+
+	gop := &GraOrgPrefs{
+		Theme:           "",
+		HomeDashboardId: gdm.Dashboard.Id,
+		Timezone:        "browser",
+	}
+
+	// Update Current Org Prefs
+	code, orgPrefResp, err := gc.CmdObj("PUT", "/api/org/preferences", gcOrg.Id, gop)
+	if err != nil {
+		ak.GinErrorAbort(500, "GrafanaClientError", err.Error())
+		return
+	}
+
+	if code != 200 {
+		ak.GinErrorAbort(code, "GetOrgNon200", string(*dashResp))
+		return
+	}
+
+	gr := &GraGenericResponse{}
+	err = json.Unmarshal(*orgPrefResp, gr)
+	if err != nil {
+		ak.SetPayload(string(*orgPrefResp))
+		ak.GinErrorAbort(code, "UnmarshalError", err.Error())
+	}
+
+	ak.GinSend(gr)
 }
 
 // EnablePluginHandler
