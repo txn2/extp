@@ -173,26 +173,6 @@ func (gc *GrafanaClient) HomeDashboardHandler(c *gin.Context) {
 	orgName := c.Param("orgName")
 	uid := c.Param("uid")
 
-	// get dashboard Id from the uid
-	code, dashResp, err := gc.Cmd("GET", "/api/dashboards/uid/"+uid, 0, nil)
-	if err != nil {
-		ak.GinErrorAbort(500, "GrafanaClientError", err.Error())
-		return
-	}
-
-	if code != 200 {
-		ak.GinErrorAbort(code, "GetOrgNon200", string(*dashResp))
-		return
-	}
-
-	gdm := &GraDashboard{}
-	err = json.Unmarshal(*dashResp, gdm)
-	if err != nil {
-		ak.SetPayload(string(*dashResp))
-		ak.GinErrorAbort(code, "UnmarshalError", err.Error())
-		return
-	}
-
 	// get the org id from the name
 	// get the orgId from the org name
 	code, resp, err := gc.Cmd("GET", "/api/orgs/name/"+orgName, 0, nil)
@@ -212,6 +192,26 @@ func (gc *GrafanaClient) HomeDashboardHandler(c *gin.Context) {
 	if err != nil {
 		ak.SetPayload(string(*resp))
 		ak.GinErrorAbort(code, "UnmarshalError", err.Error())
+	}
+
+	// get dashboard Id from the uid
+	code, dashResp, err := gc.Cmd("GET", "/api/dashboards/uid/"+uid, gcOrg.Id, nil)
+	if err != nil {
+		ak.GinErrorAbort(500, "GrafanaClientError", err.Error())
+		return
+	}
+
+	if code != 200 {
+		ak.GinErrorAbort(code, "GetOrgNon200", string(*dashResp))
+		return
+	}
+
+	gdm := &GraDashboard{}
+	err = json.Unmarshal(*dashResp, gdm)
+	if err != nil {
+		ak.SetPayload(string(*dashResp))
+		ak.GinErrorAbort(code, "UnmarshalError", err.Error())
+		return
 	}
 
 	gop := &GraOrgPrefs{
